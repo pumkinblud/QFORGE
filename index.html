@@ -13,10 +13,11 @@
   --paper:#FFF7EA; --ink:#2b2b2b; --muted:#6b645b; --accent:#7a4b1c; --accent-2:#b77b3d; --glass:rgba(255,255,255,0.65);
   --card-shadow: 0 6px 30px rgba(43,43,43,0.12);
   --radius:12px;
+  --bg: linear-gradient(180deg,#efe7d3 0%, #f9f6f1 100%);
 }
 *{box-sizing:border-box}
 html,body{height:100%}
-body{margin:0; font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; background: linear-gradient(180deg,#efe7d3 0%, #f9f6f1 100%); color:var(--ink); -webkit-font-smoothing:antialiased}
+body{margin:0; font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; background:var(--bg); color:var(--ink); -webkit-font-smoothing:antialiased}
 .container{max-width:1150px; margin:28px auto; padding:0 20px}
 .header{display:flex; align-items:center; gap:18px; background:var(--paper); padding:14px 18px; border-radius:16px; box-shadow:var(--card-shadow); border:1px solid rgba(122,75,28,0.06); position:sticky; top:12px; z-index:1000; backdrop-filter: blur(6px)}
 .brand{display:flex; align-items:baseline; gap:12px}
@@ -68,6 +69,20 @@ body{margin:0; font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 
 .filter-active{background:linear-gradient(180deg,var(--accent) 0%, var(--accent-2) 100%); color:white; border-color:transparent}
 .badge{display:inline-block;padding:6px 8px;border-radius:999px;background:#fff3e6;border:1px solid rgba(122,75,28,0.06); font-size:12px;color:var(--accent);margin-left:6px}
 .actions-row{display:flex; gap:8px; align-items:center; margin-top:12px}
+
+/* small profile modal */
+.profile-mini{display:flex; gap:12px; align-items:center}
+.profile-avatar{width:64px;height:64px;border-radius:12px;background:#fff;border:1px solid rgba(0,0,0,0.04);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--accent);}
+
+/* dark mode */
+body.dark{
+  --paper:#1b1b1b; --ink:#eaeaea; --muted:#bdb6a8; --accent:#e5b07b; --accent-2:#f2cfa0;
+  --bg: linear-gradient(180deg,#0f0f0f 0%, #141414 100%);
+}
+body.dark .post{background:linear-gradient(180deg, rgba(28,28,28,0.9), rgba(22,22,22,0.95)); border-color:rgba(255,255,255,0.03)}
+body.dark .sidebar, body.dark .rightcol{background:rgba(22,22,22,0.6)}
+body.dark .input{background:rgba(255,255,255,0.03); border-color:rgba(255,255,255,0.04)}
+body.dark .tag{background:rgba(255,255,255,0.03); color:var(--accent)}
 </style>
 </head>
 <body>
@@ -84,6 +99,7 @@ body{margin:0; font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 
     </div>
 
     <div class="header-actions">
+      <button id="themeToggle" class="linkish" title="Toggle dark mode">🌗</button>
       <div id="userInfo" class="center">
         <span id="userName" class="muted"></span>
       </div>
@@ -117,14 +133,6 @@ body{margin:0; font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 
             <div class="skeleton skele-line" style="width:40%"></div>
             <div class="skeleton skele-line" style="width:80%"></div>
             <div class="skeleton skele-line" style="width:60%"></div>
-          </div>
-        </div>
-        <div style="display:flex; gap:12px; margin-bottom:12px; align-items:center">
-          <div class="skeleton skele-avatar"></div>
-          <div style="flex:1">
-            <div class="skeleton skele-line" style="width:30%"></div>
-            <div class="skeleton skele-line" style="width:90%"></div>
-            <div class="skeleton skele-line" style="width:40%"></div>
           </div>
         </div>
       </div>
@@ -183,17 +191,38 @@ body{margin:0; font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 
   </div>
 </div>
 
-<!-- Firebase + Google Sign-In + Firestore Logic -->
+<!-- Profile modal -->
+<div class="modal-backdrop" id="profileBackdrop" aria-hidden="true">
+  <div class="modal" id="profileModal" role="dialog" aria-modal="true">
+    <div style="display:flex; justify-content:space-between; align-items:center">
+      <div class="profile-mini">
+        <div class="profile-avatar" id="profileAvatar">A</div>
+        <div>
+          <h3 id="profileName"></h3>
+          <div class="kicker muted" id="profileEmail"></div>
+        </div>
+      </div>
+      <div id="profileActions"></div>
+    </div>
+    <hr style="border:none; height:1px; background:#eee; margin:12px 0">
+    <div id="profileBio" class="muted">No bio</div>
+  </div>
+</div>
+
+
 <script type="module">
-  // ESM imports: Firebase, DOMPurify (ESM), marked (ESM)
+  // -------------------------------
+  // Firebase imports (no duplicates)
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
   import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-  import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, doc, deleteDoc, setDoc, getDoc, where, getDocs, updateDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+  import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, doc, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
-  import DOMPurify from 'https://cdn.jsdelivr.net/npm/dompurify@3.0.5/dist/purify.es.js';
-  import { marked } from 'https://cdn.jsdelivr.net/npm/marked@5.2.12/lib/marked.esm.js';
+  // External libraries (working CDNs)
+  import { marked } from 'https://cdn.jsdelivr.net/npm/marked/marked.min.js';
+  import DOMPurify from 'https://cdn.jsdelivr.net/npm/dompurify@2.4.3/dist/purify.min.js';
 
-  // ---------- CONFIG: Replace with your project's config if different ----------
+  // -------------------------------
+  // Firebase config
   const firebaseConfig = {
     apiKey: "AIzaSyBWlj0gA31boKWZ8Rukj7oSUZbIqUsY6Sk",
     authDomain: "tipidi-tapap.firebaseapp.com",
@@ -203,470 +232,120 @@ body{margin:0; font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 
     appId: "1:607716485574:web:52a976161569ac79a06ac7",
     measurementId: "G-WJNZNZ4Q9Q"
   };
-  // -------------------------------------------------------------------------------
 
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
-  const provider = new GoogleAuthProvider();
   const db = getFirestore(app);
+  const provider = new GoogleAuthProvider();
 
-  // UI elements
-  const authBtn = document.getElementById('authBtn');
-  const userNameEl = document.getElementById('userName');
-  const newPostBtn = document.getElementById('newPostBtn');
-  const modalBackdrop = document.getElementById('modalBackdrop');
-  const postModal = document.getElementById('postModal');
-  const postTitle = document.getElementById('postTitle');
-  const postContent = document.getElementById('postContent');
-  const postTags = document.getElementById('postTags');
-  const postCategory = document.getElementById('postCategory');
-  const cancelPost = document.getElementById('cancelPost');
-  const submitPost = document.getElementById('submitPost');
-
-  const postsContainer = document.getElementById('postsContainer');
-  const topicList = document.getElementById('topicList');
-  const filterRow = document.getElementById('filterRow');
-  const trendingEl = document.getElementById('trending');
-  const trendingCount = document.getElementById('trendingCount');
-  const adminPanel = document.getElementById('adminPanel');
-
-  const viewerBackdrop = document.getElementById('viewerBackdrop');
-  const viewerModal = document.getElementById('viewerModal');
-  const viewerTitle = document.getElementById('viewerTitle');
-  const viewerMeta = document.getElementById('viewerMeta');
-  const viewerBody = document.getElementById('viewerBody');
-  const viewerTags = document.getElementById('viewerTags');
-  const viewerActions = document.getElementById('viewerActions');
-
-  let currentUser = null;
-  let currentRole = 'anonymous'; // 'user' | 'moderator' | 'admin'
-  let postsSnapshotUnsub = null;
-  let allPosts = []; // local cache
-
-  // Utility: open/close modal
-  function openModal(modalWrap){
-    modalWrap.style.display = 'flex';
-    setTimeout(()=> modalWrap.querySelector('.modal').classList.add('show'), 10);
-    modalWrap.setAttribute('aria-hidden', 'false');
-  }
-  function closeModal(modalWrap){
-    modalWrap.querySelector('.modal').classList.remove('show');
-    setTimeout(()=> modalWrap.style.display = 'none', 250);
-    modalWrap.setAttribute('aria-hidden', 'true');
-  }
-
-  // Auth handlers
-  authBtn.addEventListener('click', async ()=>{
-    if(currentUser){
-      await signOut(auth);
-      return;
-    }
+  // -------------------------------
+  // Google Sign-In
+  window.googleLogin = async () => {
     try {
-      await signInWithPopup(auth, provider);
-    } catch(err){
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      const roleDoc = await getDoc(doc(db, 'roles', user.uid));
+      if (!roleDoc.exists()) {
+        await setDoc(doc(db, 'roles', user.uid), { role: 'user' });
+      }
+    } catch (err) {
       alert('Sign-in failed: ' + err.message);
     }
-  });
-
-  window.googleLogout = async ()=> {
-    await signOut(auth);
   };
 
-  // Create or update role doc for new users (default role = user)
-  async function ensureRoleDoc(uid){
-    const roleRef = doc(db, 'roles', uid);
-    const snap = await getDoc(roleRef);
-    if(!snap.exists()){
-      await setDoc(roleRef, { role: 'user' });
-      return 'user';
-    }
-    return snap.data()?.role || 'user';
-  }
+  window.googleLogout = async () => { await signOut(auth); };
 
-  // When auth state changes
-  onAuthStateChanged(auth, async user=>{
-    currentUser = user;
+  onAuthStateChanged(auth, user => {
+    window.currentUser = user;
+    const userNameEl = document.getElementById('userName');
+    const signInBtn = document.getElementById('signInBtn');
+
     if(user){
       userNameEl.textContent = user.displayName;
-      authBtn.textContent = 'Sign out';
-      // ensure role
-      try {
-        currentRole = await ensureRoleDoc(user.uid);
-      } catch(e){ console.warn('role doc error', e); currentRole='user' }
-      renderAdminPanel();
+      signInBtn.style.display = 'none';
     } else {
       userNameEl.textContent = '';
-      authBtn.textContent = 'Sign in with Google';
-      currentRole = 'anonymous';
-      renderAdminPanel();
+      signInBtn.style.display = 'inline-block';
     }
   });
 
-  // New post modal behavior
-  newPostBtn.addEventListener('click', ()=>{
-    if(!currentUser){
-      alert('Please sign in to create a post.');
-      return;
-    }
-    // prepare modal for create
-    postTitle.value = '';
-    postContent.value = '';
-    postTags.value = '';
-    postCategory.value = 'General';
-    submitPost.dataset.mode = 'create';
-    openModal(modalBackdrop);
-  });
-  cancelPost.addEventListener('click', ()=> closeModal(modalBackdrop));
+  // -------------------------------
+  // Modal logic
+  const modalBackdrop = document.getElementById('modalBackdrop');
+  const postModal = document.getElementById('postModal');
 
-  // Publish or update post
-  submitPost.addEventListener('click', async ()=>{
-    const title = postTitle.value.trim();
-    const contentRaw = postContent.value.trim();
-    if(!title || !contentRaw){ alert('Title and content are required'); return; }
-    const tags = postTags.value.split(',').map(s=>s.trim()).filter(Boolean);
-    const category = postCategory.value || 'General';
-    const mode = submitPost.dataset.mode || 'create';
-    try {
-      if(mode === 'create'){
-        await addDoc(collection(db,'posts'), {
-          title,
-          content: contentRaw,
-          tags,
-          category,
-          author: { uid: currentUser.uid, name: currentUser.displayName, email: currentUser.email },
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
-          visible: true
-        });
-      } else if(mode === 'edit'){
-        const id = submitPost.dataset.postId;
-        const pDoc = doc(db,'posts',id);
-        await updateDoc(pDoc, {
-          title, content: contentRaw, tags, category, updatedAt: serverTimestamp()
-        });
-      }
-      closeModal(modalBackdrop);
-    } catch(err){
-      alert('Error saving post: '+err.message);
-    }
+  document.getElementById('newPostBtn').addEventListener('click', () => {
+    if(!window.currentUser){ alert('Sign in first'); return; }
+    modalBackdrop.style.display = 'flex';
+    setTimeout(() => postModal.classList.add('show'), 10);
   });
 
-  // Subscribe to posts collection and render feed + topics + trending
+  document.getElementById('cancelPost').addEventListener('click', () => {
+    postModal.classList.remove('show');
+    setTimeout(() => modalBackdrop.style.display = 'none', 250);
+  });
+
+  // -------------------------------
+  // Submit new post
+  document.getElementById('submitPost').addEventListener('click', async () => {
+    const title = document.getElementById('postTitle').value.trim();
+    const content = document.getElementById('postContent').value.trim();
+    if(!title || !content){ alert('Title and content required'); return; }
+
+    const tags = document.getElementById('postTags').value.split(',').map(s=>s.trim()).filter(Boolean);
+    const category = document.getElementById('postCategory').value;
+
+    await addDoc(collection(db, 'posts'), {
+      title,
+      content,
+      tags,
+      category,
+      author: { uid: window.currentUser.uid, name: window.currentUser.displayName },
+      createdAt: serverTimestamp(),
+      visible: true
+    });
+
+    // Clear form
+    document.getElementById('postTitle').value = '';
+    document.getElementById('postContent').value = '';
+    document.getElementById('postTags').value = '';
+    document.getElementById('postCategory').value = 'General';
+
+    postModal.classList.remove('show');
+    setTimeout(() => modalBackdrop.style.display = 'none', 250);
+  });
+
+  // -------------------------------
+  // Load posts from Firestore
   const postsQuery = query(collection(db,'posts'), orderBy('createdAt','desc'));
-  postsSnapshotUnsub = onSnapshot(postsQuery, snap=>{
-    const posts = [];
-    snap.forEach(snapDoc=>{
-      const data = snapDoc.data();
-      posts.push({ id: snapDoc.id, ...data });
-    });
-    allPosts = posts;
-    renderFeed(posts);
-    renderTopicsAndTrending(posts);
-  }, err=>{
-    console.error('posts snapshot error', err);
-  });
+  onSnapshot(postsQuery, snap => {
+    const container = document.getElementById('postsContainer');
+    container.innerHTML = '';
 
-  // Render feed with sanitized markdown, snippets, and click-to-open
-  function renderFeed(posts){
-    postsContainer.innerHTML = '';
-    const search = document.getElementById('globalSearch').value.trim().toLowerCase();
-    const activeFilter = document.querySelector('.filter-chip.filter-active')?.dataset.filter || 'all';
+    snap.forEach(docSnap => {
+      const p = docSnap.data();
+      if(!p.visible) return;
 
-    const filtered = posts.filter(p=>{
-      if(!p.visible) return false;
-      if(activeFilter !== 'all' && p.category !== activeFilter && !(p.tags||[]).includes(activeFilter)) return false;
-      if(!search) return true;
-      const hay = (p.title + ' ' + (p.content||'') + ' ' + (p.tags||[]).join(' ')).toLowerCase();
-      return hay.includes(search);
-    });
-
-    if(filtered.length === 0){
-      postsContainer.innerHTML = '<div class="muted">No posts match your filters/search.</div>';
-      return;
-    }
-
-    filtered.forEach(p=>{
       const el = document.createElement('div');
       el.className = 'post';
-      const avatarChar = (p.author?.name || 'A')[0] || 'A';
-      // Render markdown -> HTML, then sanitize
-      const html = DOMPurify.sanitize(marked.parse(p.content || ''), { USE_PROFILES: { html: true }});
-      // snippet: plain text trimmed
-      const snippetText = stripTags(html).slice(0, 220);
-      const snippetHtml = DOMPurify.sanitize(marked.parse(snippetText + (snippetText.length >= 220 ? '...' : '')), {USE_PROFILES:{html:true}});
+
+      // Markdown to safe HTML
+      const safeContent = DOMPurify.sanitize(marked.parse(p.content));
 
       el.innerHTML = `
-        <div class="avatar" aria-hidden="true">${escapeHtml(avatarChar)}</div>
+        <div class="avatar">${p.author?.name[0]||'A'}</div>
         <div class="post-body">
-          <h3 class="post-title">${escapeHtml(p.title)}</h3>
-          <div class="post-meta">${p.category} • ${p.author?.name || 'Anonymous'} • ${timestampToString(p.createdAt)}</div>
-          <div class="post-content"><div class="post-snippet">${snippetHtml}</div></div>
-          <div class="tags">${(p.tags||[]).map(t=>`<span class="tag">${escapeHtml(t)}</span>`).join('')}</div>
-          <div class="actions-row">
-            <button class="small" data-action="open" data-id="${p.id}">Open</button>
-            ${(currentRole==='admin' || currentRole==='moderator' || (currentUser && currentUser.uid === p.author?.uid)) ? `<button class="small" data-action="edit" data-id="${p.id}">Edit</button>` : ''}
-            ${(currentRole==='admin' || currentRole==='moderator' || (currentUser && currentUser.uid === p.author?.uid)) ? `<button class="small" data-action="delete" data-id="${p.id}">Delete</button>` : ''}
-          </div>
+          <h3 class="post-title">${p.title}</h3>
+          <p class="post-content">${safeContent}</p>
+          <small class="post-meta">By ${p.author.name}</small>
         </div>
       `;
-      postsContainer.appendChild(el);
+
+      container.appendChild(el);
     });
-
-    // attach delegated click handlers for open / edit / delete
-    postsContainer.querySelectorAll('[data-action]').forEach(btn=>{
-      btn.onclick = async (e)=>{
-        const id = btn.dataset.id;
-        const action = btn.dataset.action;
-        const post = allPosts.find(x=>x.id===id);
-        if(!post) return alert('Post not found (it may have been removed).');
-        if(action === 'open') openViewer(post);
-        else if(action === 'edit'){
-          if(!currentUser) return alert('Please sign in to edit.');
-          // permission check: owner or moderator/admin
-          if(!(currentUser.uid === post.author?.uid || currentRole==='admin' || currentRole==='moderator')) return alert('You do not have permission to edit this post.');
-          // populate modal with post and set mode to edit
-          postTitle.value = post.title || '';
-          postContent.value = post.content || '';
-          postTags.value = (post.tags||[]).join(', ');
-          postCategory.value = post.category || 'General';
-          submitPost.dataset.mode = 'edit';
-          submitPost.dataset.postId = post.id;
-          openModal(modalBackdrop);
-        } else if(action === 'delete'){
-          if(!currentUser) return alert('Please sign in to delete.');
-          if(!(currentUser.uid === post.author?.uid || currentRole==='admin' || currentRole==='moderator')) return alert('You do not have permission to delete this post.');
-          if(!confirm('Delete this post permanently?')) return;
-          try {
-            await deleteDoc(doc(db,'posts',id));
-            alert('Post deleted.');
-          } catch(err){
-            alert('Delete failed: '+err.message);
-          }
-        }
-      };
-    });
-  }
-
-  // Open viewer modal for full post
-  function openViewer(post){
-    viewerTitle.textContent = post.title;
-    viewerMeta.textContent = `${post.category} • ${post.author?.name || 'Anonymous'} • ${timestampToString(post.createdAt)}${post.updatedAt ? ' • updated '+timestampToString(post.updatedAt) : ''}`;
-    viewerBody.innerHTML = DOMPurify.sanitize(marked.parse(post.content || ''), { USE_PROFILES: { html: true }});
-    viewerTags.innerHTML = (post.tags||[]).map(t=>`<span class="tag">${escapeHtml(t)}</span>`).join('');
-    viewerActions.innerHTML = '';
-    // Show inline admin actions in viewer for convenience
-    if(currentUser && (currentUser.uid === post.author?.uid || currentRole==='admin' || currentRole==='moderator')){
-      const editBtn = document.createElement('button'); editBtn.className='small'; editBtn.textContent='Edit';
-      editBtn.onclick = ()=> {
-        // open edit modal with post
-        postTitle.value = post.title || '';
-        postContent.value = post.content || '';
-        postTags.value = (post.tags||[]).join(', ');
-        postCategory.value = post.category || 'General';
-        submitPost.dataset.mode = 'edit';
-        submitPost.dataset.postId = post.id;
-        closeModal(viewerBackdrop);
-        openModal(modalBackdrop);
-      };
-      const delBtn = document.createElement('button'); delBtn.className='small'; delBtn.textContent='Delete';
-      delBtn.onclick = async ()=>{
-        if(!confirm('Delete this post?')) return;
-        try { await deleteDoc(doc(db,'posts',post.id)); closeModal(viewerBackdrop); alert('Deleted.'); } catch(err){ alert('Delete failed: '+err.message); }
-      };
-      viewerActions.appendChild(editBtn); viewerActions.appendChild(delBtn);
-    }
-    openModal(viewerBackdrop);
-  }
-  // close viewer when clicking backdrop
-  viewerBackdrop.addEventListener('click', (e)=>{ if(e.target === viewerBackdrop) closeModal(viewerBackdrop); });
-
-  // Helpers: escape HTML for small bits, strip tags
-  function escapeHtml(s=''){ return (s+'').replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]); }
-  function stripTags(html=''){ return html.replace(/<[^>]*>/g,'').replace(/\s+/g,' ').trim(); }
-  function timestampToString(ts){
-    try {
-      if(!ts) return 'unknown date';
-      const d = ts.toDate ? ts.toDate() : (ts instanceof Date ? ts : new Date(ts));
-      return d.toLocaleString(undefined, { dateStyle:'medium', timeStyle:'short' });
-    } catch(e){ return 'unknown date'; }
-  }
-
-  // Topics & Trending
-  function renderTopicsAndTrending(posts){
-    // categories counts
-    const catCounts = {};
-    const tagCounts = {};
-    posts.forEach(p=>{
-      if(!p.visible) return;
-      const cat = p.category || 'General';
-      catCounts[cat] = (catCounts[cat]||0) + 1;
-      (p.tags||[]).forEach(t => { tagCounts[t] = (tagCounts[t]||0)+1; });
-    });
-    // topics
-    topicList.innerHTML = Object.keys(catCounts).sort().map(cat=>`<a href="#" data-cat="${escapeHtml(cat)}">${escapeHtml(cat)} <span class="badge">${catCounts[cat]}</span></a>`).join('') || '<div class="muted">No categories yet</div>';
-    topicList.querySelectorAll('a').forEach(a=>{
-      a.onclick = (e)=>{ e.preventDefault(); applyFilter(a.dataset.cat); };
-    });
-
-    // filters: tags top 8
-    const popularTags = Object.entries(tagCounts).sort((a,b)=>b[1]-a[1]).slice(0,12);
-    // ensure filter-row has 'All' button
-    filterRow.innerHTML = '<button class="filter-chip filter-active" data-filter="all">All</button>' + popularTags.map(t=>`<button class="filter-chip" data-filter="${escapeHtml(t[0])}">${escapeHtml(t[0])} <span class="badge">${t[1]}</span></button>`).join('');
-    filterRow.querySelectorAll('.filter-chip').forEach(btn=>{
-      btn.onclick = ()=>{
-        filterRow.querySelectorAll('.filter-chip').forEach(b=>b.classList.remove('filter-active'));
-        btn.classList.add('filter-active');
-        applyFilter(btn.dataset.filter);
-      };
-    });
-
-    // trending tags in right column
-    trendingEl.innerHTML = popularTags.length ? popularTags.map(t=>`<button class="filter-chip" data-filter="${escapeHtml(t[0])}">${escapeHtml(t[0])} <span class="badge">${t[1]}</span></button>`).join(' ') : '<div class="muted">No tags yet</div>';
-    trendingCount.textContent = Object.keys(tagCounts).length;
-    // wire up trending tag clicks
-    trendingEl.querySelectorAll('.filter-chip').forEach(b=>b.onclick = ()=>{ filterRow.querySelectorAll('.filter-chip').forEach(bb=>bb.classList.remove('filter-active')); b.classList.add('filter-active'); applyFilter(b.dataset.filter); });
-  }
-
-  // Apply filter and re-render
-  function applyFilter(filter){
-    // set active class handled in UI wiring
-    renderFeed(allPosts);
-    // smooth scroll to feed
-    document.querySelector('.feed').scrollIntoView({behavior:'smooth'});
-  }
-
-  // Admin panel: manage roles and view administrative actions
-  function renderAdminPanel(){
-    if(!currentUser){
-      adminPanel.innerHTML = '<div class="muted">Sign in to see admin options</div>';
-      return;
-    }
-    if(currentRole === 'admin' || currentRole === 'moderator'){
-      adminPanel.innerHTML = `
-        <div class="kicker muted">Signed in as ${escapeHtml(currentUser.displayName)} (${escapeHtml(currentRole)})</div>
-        <div style="height:8px"></div>
-        <button id="manageRolesBtn" class="linkish">Manage roles</button>
-        <button id="signOutSmall" class="linkish">Sign out</button>
-      `;
-      document.getElementById('manageRolesBtn').onclick = openManageRoles;
-      document.getElementById('signOutSmall').onclick = ()=> signOut(auth);
-    } else {
-      adminPanel.innerHTML = `<div class="kicker muted">Signed in as ${escapeHtml(currentUser.displayName)} (${escapeHtml(currentRole)})</div><div style="height:8px"></div><button id="signOutSmall2" class="linkish">Sign out</button>`;
-      document.getElementById('signOutSmall2').onclick = ()=> signOut(auth);
-    }
-  }
-
-  // Simple manage roles UI (admin only)
-  async function openManageRoles(){
-    if(currentRole !== 'admin') return alert('Only admins can manage roles.');
-    // build a small UI modal (reuses post modal)
-    const modalHtml = `
-      <div style="padding:6px;">
-        <div class="kicker muted">Roles manager — enter user UID and role (user | moderator | admin)</div>
-        <div style="height:8px"></div>
-        <input id="roleUid" class="input-md" placeholder="User UID">
-        <div style="height:8px"></div>
-        <input id="roleValue" class="input-md" placeholder="Role (user | moderator | admin)">
-        <div style="height:8px"></div>
-        <div style="display:flex; gap:8px; justify-content:flex-end">
-          <button id="cancelRoles" class="linkish">Cancel</button>
-          <button id="saveRoles" class="btn">Save</button>
-        </div>
-      </div>
-    `;
-    // create ephemeral modal
-    const wrapper = document.createElement('div'); wrapper.className='modal-backdrop'; wrapper.style.display='flex';
-    wrapper.innerHTML = `<div class="modal">${modalHtml}</div>`;
-    document.body.appendChild(wrapper);
-    setTimeout(()=> wrapper.querySelector('.modal').classList.add('show'),10);
-    wrapper.querySelector('#cancelRoles').onclick = ()=> { wrapper.querySelector('.modal').classList.remove('show'); setTimeout(()=> wrapper.remove(),250); };
-    wrapper.querySelector('#saveRoles').onclick = async ()=>{
-      const uid = wrapper.querySelector('#roleUid').value.trim();
-      const role = wrapper.querySelector('#roleValue').value.trim();
-      if(!uid || !role) return alert('UID and role required');
-      if(!['user','moderator','admin'].includes(role)) return alert('Invalid role');
-      try {
-        await setDoc(doc(db,'roles',uid), { role });
-        alert('Role saved');
-        wrapper.querySelector('.modal').classList.remove('show'); setTimeout(()=> wrapper.remove(),250);
-      } catch(err){ alert('Error: '+err.message) }
-    };
-  }
-
-  // Search box wiring
-  document.getElementById('globalSearch').addEventListener('input', ()=>{
-    renderFeed(allPosts);
   });
-
-  // close modal on backdrop click
-  modalBackdrop.addEventListener('click', (e)=>{ if(e.target===modalBackdrop) closeModal(modalBackdrop); });
-
-  // Utility: escape string for insertion into small text contexts (already defined)
-  // For good measure attach keyboard shortcuts: Esc closes modals
-  window.addEventListener('keydown', (e)=> {
-    if(e.key === 'Escape'){
-      if(modalBackdrop.style.display==='flex') closeModal(modalBackdrop);
-      if(viewerBackdrop.style.display==='flex') closeModal(viewerBackdrop);
-    }
-  });
-
-  // small helper to construct doc reference (imported functions used above)
-  function doc(db, path, id){
-    // we already imported doc from firebase modules earlier, but our local helper is shadowing — use global import
-    return window.firebaseDoc ? window.firebaseDoc(db, path, id) : window._docFallback(db, path, id);
-  }
-
-  // Because we used imports named 'doc' earlier, they are available — ensure no conflict (no-op)
-  // eslint-disable-next-line no-unused-vars
-  const _noop = null;
-
-  // Because we sometimes receive timestamps as null, provide a defensive presentation
-  // Done earlier in timestampToString
-
-  // Render initial admin panel (anonymous)
-  renderAdminPanel();
-
 </script>
 
-<!-- Firestore security rules (copy to Firebase Console -> Firestore -> Rules) -->
-<!--
-Firestore rules example (adjust to your needs). Deploy these using the Firebase Console or CLI.
-
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    // Roles collection: readable by admins and moderators, writable only by admins
-    match /roles/{userId} {
-      allow read: if request.auth != null && (get(/databases/$(database)/documents/roles/$(request.auth.uid)).data.role in ['admin','moderator']);
-      allow write: if request.auth != null && get(/databases/$(database)/documents/roles/$(request.auth.uid)).data.role == 'admin';
-      // allow users to create their own role doc only when it doesn't exist (for onboarding default)
-      allow create: if request.auth != null && request.auth.uid == userId && !exists(/databases/$(database)/documents/roles/$(userId));
-    }
-
-    // Posts
-    match /posts/{postId} {
-      allow read: if true; // public read — adjust if you want restricted visibility
-      allow create: if request.auth != null && request.resource.data.author.uid == request.auth.uid
-                    && request.resource.data.title is string
-                    && request.resource.data.content is string
-                    && request.resource.data.visible is bool;
-      allow update: if request.auth != null && (
-          // owners can update their posts
-          resource.data.author.uid == request.auth.uid
-          // moderators and admins can update any post
-          || get(/databases/$(database)/documents/roles/$(request.auth.uid)).data.role in ['admin','moderator']
-      );
-      allow delete: if request.auth != null && (
-          resource.data.author.uid == request.auth.uid
-          || get(/databases/$(database)/documents/roles/$(request.auth.uid)).data.role in ['admin','moderator']
-      );
-    }
-
-    // Deny everything else by default
-    match /{document=**} { allow read, write: if false; }
-  }
-}
--->
 
 </body>
 </html>
