@@ -4,8 +4,10 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>VR Library — Community Encyclopedia</title>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
 <style>
 :root{
   --paper:#FFF7EA; --ink:#2b2b2b; --muted:#6b645b; --accent:#7a4b1c; --accent-2:#b77b3d; --glass:rgba(255,255,255,0.65);
@@ -16,12 +18,12 @@
 html,body{height:100%}
 body{margin:0; font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; background: linear-gradient(180deg,#efe7d3 0%, #f9f6f1 100%); color:var(--ink); -webkit-font-smoothing:antialiased}
 .container{max-width:1150px; margin:28px auto; padding:0 20px}
-.header{display:flex; align-items:center; gap:18px; background:var(--paper); padding:18px; border-radius:16px; box-shadow:var(--card-shadow); border:1px solid rgba(122,75,28,0.06)}
+.header{display:flex; align-items:center; gap:18px; background:var(--paper); padding:14px 18px; border-radius:16px; box-shadow:var(--card-shadow); border:1px solid rgba(122,75,28,0.06); position:sticky; top:12px; z-index:1000; backdrop-filter: blur(6px)}
 .brand{display:flex; align-items:baseline; gap:12px}
-.logo-title{font-family:'Merriweather', serif; font-size:22px; font-weight:700; color:var(--accent)}
-.logo-sub{font-size:13px; color:var(--muted)}
+.logo-title{font-family:'Merriweather', serif; font-size:20px; font-weight:700; color:var(--accent)}
+.logo-sub{font-size:12px; color:var(--muted)}
 .searchbar{flex:1; position:relative}
-.input{width:100%; padding:12px 16px; border-radius:12px; border:1px solid rgba(43,43,43,0.06); background:var(--glass); box-shadow:inset 0 1px 0 rgba(255,255,255,0.6); font-size:15px}
+.input{width:100%; padding:10px 14px; border-radius:12px; border:1px solid rgba(43,43,43,0.06); background:var(--glass); box-shadow:inset 0 1px 0 rgba(255,255,255,0.6); font-size:14px}
 .header-actions{display:flex; gap:10px; align-items:center}
 .btn{background:linear-gradient(180deg,var(--accent) 0%, var(--accent-2) 100%); color:white; border:none; padding:10px 14px; border-radius:10px; font-weight:600; cursor:pointer; box-shadow:0 6px 20px rgba(183,123,61,0.15)}
 .linkish{background:transparent; border:1px solid rgba(0,0,0,0.06); padding:8px 10px; border-radius:8px; cursor:pointer}
@@ -33,12 +35,12 @@ body{margin:0; font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 
 .topic-list a:hover{background:rgba(122,75,28,0.06)}
 .filter-row{display:flex; gap:8px; flex-wrap:wrap}
 .filter-chip{padding:8px 10px; border-radius:999px; background:transparent; border:1px solid rgba(43,43,43,0.06); cursor:pointer}
-.feed{padding:16px; border-radius:14px; background:rgba(255,255,255,0.8); border:1px solid rgba(43,43,43,0.03); box-shadow:0 10px 30px rgba(43,43,43,0.04); min-height:60vh}
-.post{display:flex; gap:14px; padding:14px; border-radius:12px; background:linear-gradient(180deg, rgba(255,255,255,0.9), rgba(249,246,241,0.9)); border:1px solid rgba(43,43,43,0.04); margin-bottom:12px; transition:transform .25s cubic-bezier(.2,.9,.3,1), box-shadow .25s}
+.feed{padding:16px; border-radius:14px; background:rgba(255,255,255,0.85); border:1px solid rgba(43,43,43,0.03); box-shadow:0 10px 30px rgba(43,43,43,0.04); min-height:60vh}
+.post{display:flex; gap:14px; padding:14px; border-radius:12px; background:linear-gradient(180deg, rgba(255,255,255,0.92), rgba(249,246,241,0.92)); border:1px solid rgba(43,43,43,0.04); margin-bottom:12px; transition:transform .25s cubic-bezier(.2,.9,.3,1), box-shadow .25s}
 .post:hover{transform:translateY(-6px); box-shadow:0 18px 40px rgba(43,43,43,0.08)}
 .avatar{width:56px; height:56px; border-radius:10px; background:linear-gradient(180deg,#fff,#f4efe5); display:flex; align-items:center; justify-content:center; font-weight:700; color:var(--accent)}
 .post-body{flex:1}
-.post-title{font-family:'Merriweather', serif; font-size:18px; margin:0}
+.post-title{font-family:'Merriweather', serif; font-size:18px; margin:0 0 6px 0}
 .post-meta{color:var(--muted); font-size:13px; margin-bottom:8px}
 .post-content{color:#333; margin-bottom:10px}
 .tags{display:flex; gap:8px; flex-wrap:wrap}
@@ -46,72 +48,106 @@ body{margin:0; font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 
 .post-actions{display:flex; gap:8px; align-items:center}
 .small{padding:6px 8px; border-radius:8px; background:transparent; border:1px solid rgba(43,43,43,0.05); cursor:pointer}
 .rightcol{background:rgba(255,255,255,0.7); padding:16px; border-radius:14px}
-.modal-backdrop{position:fixed; inset:0; display:none; background:rgba(9,8,6,0.45); align-items:center; justify-content:center}
-.modal{width:720px; max-width:94%; background:var(--paper); border-radius:14px; padding:18px; box-shadow:0 30px 60px rgba(0,0,0,0.4); transform:scale(.98); opacity:0; transition:all .28s cubic-bezier(.2,.9,.3,1)}
+.modal-backdrop{position:fixed; inset:0; display:none; background:rgba(9,8,6,0.45); align-items:center; justify-content:center; z-index:2000}
+.modal{width:820px; max-width:94%; background:var(--paper); border-radius:14px; padding:18px; box-shadow:0 30px 60px rgba(0,0,0,0.4); transform:scale(.98); opacity:0; transition:all .28s cubic-bezier(.2,.9,.3,1); max-height:92vh; overflow:auto}
 .modal.show{transform:scale(1); opacity:1}
 .form-row{display:flex; gap:10px}
 .input-md{width:100%; padding:12px; border-radius:10px; border:1px solid rgba(0,0,0,0.06)}
 .textarea-md{width:100%; min-height:160px; padding:12px; border-radius:10px; border:1px solid rgba(0,0,0,0.06); resize:vertical}
 .fade-in{animation:fadeIn .45s ease forwards}
 @keyframes fadeIn{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none}}
-@media (max-width:1000px){ .layout{grid-template-columns:1fr; } .rightcol{order:3} .sidebar{order:2} }
+@media (max-width:1000px){ .layout{grid-template-columns:1fr; } .rightcol{order:3} .sidebar{order:2} .header{top:0; border-radius:0; margin:0 -20px 0 -20px}}
 .center{display:flex; align-items:center; gap:10px}
 .muted{color:var(--muted)}
+.kicker{font-size:13px; color:var(--muted); margin-bottom:8px}
+.skeleton{background:linear-gradient(90deg,#efe7d3 0%, #f9f6f1 50%, #efe7d3 100%); background-size:200% 100%; animation:skele 1.4s linear infinite; border-radius:10px}
+.skele-line{height:12px; margin-bottom:8px}
+.skele-avatar{width:56px; height:56px; border-radius:10px}
+@keyframes skele{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.post-snippet{color:#444; max-height:4.6em; overflow:hidden}
+.filter-active{background:linear-gradient(180deg,var(--accent) 0%, var(--accent-2) 100%); color:white; border-color:transparent}
+.badge{display:inline-block;padding:6px 8px;border-radius:999px;background:#fff3e6;border:1px solid rgba(122,75,28,0.06); font-size:12px;color:var(--accent);margin-left:6px}
+.actions-row{display:flex; gap:8px; align-items:center; margin-top:12px}
 </style>
 </head>
 <body>
 
 <div class="container">
-  <header class="header">
+  <header class="header" role="banner">
     <div class="brand">
       <div class="logo-title">The VR Library</div>
       <div class="logo-sub">A community encyclopedia — elegant & persistent</div>
     </div>
-    <div class="searchbar">
+
+    <div class="searchbar" style="max-width:680px">
       <input id="globalSearch" class="input" placeholder="Search titles, tags, and content..." aria-label="Search">
     </div>
+
     <div class="header-actions">
       <div id="userInfo" class="center">
         <span id="userName" class="muted"></span>
       </div>
-      <button id="signInBtn" class="btn" onclick="googleLogin()">Sign in with Google</button>
+      <button id="authBtn" class="btn">Sign in with Google</button>
       <button id="newPostBtn" class="linkish">New Post</button>
     </div>
   </header>
 
-  <div class="layout">
-    <aside class="sidebar">
+  <div class="layout" role="main">
+    <aside class="sidebar" aria-label="Collections & Filters">
       <h3 class="h3">Collections</h3>
-      <div class="topic-list" id="topicList"></div>
+      <div class="topic-list" id="topicList">
+        <div class="kicker muted">Loading topics…</div>
+      </div>
       <div style="height:12px"></div>
       <h3 class="h3">Filters</h3>
-      <div class="filter-row" id="filterRow"></div>
+      <div class="filter-row" id="filterRow">
+        <button class="filter-chip filter-active" data-filter="all">All</button>
+      </div>
       <div style="height:12px"></div>
       <h3 class="h3">Administration</h3>
-      <div id="adminPanel"></div>
+      <div id="adminPanel"><div class="muted">Sign in to see admin options</div></div>
     </aside>
 
-    <main class="feed" id="feed">
-      <div id="postsContainer"></div>
+    <main class="feed" id="feed" aria-live="polite">
+      <div id="postsContainer">
+        <!-- skeletons while loading -->
+        <div style="display:flex; gap:12px; margin-bottom:12px; align-items:center">
+          <div class="skeleton skele-avatar"></div>
+          <div style="flex:1">
+            <div class="skeleton skele-line" style="width:40%"></div>
+            <div class="skeleton skele-line" style="width:80%"></div>
+            <div class="skeleton skele-line" style="width:60%"></div>
+          </div>
+        </div>
+        <div style="display:flex; gap:12px; margin-bottom:12px; align-items:center">
+          <div class="skeleton skele-avatar"></div>
+          <div style="flex:1">
+            <div class="skeleton skele-line" style="width:30%"></div>
+            <div class="skeleton skele-line" style="width:90%"></div>
+            <div class="skeleton skele-line" style="width:40%"></div>
+          </div>
+        </div>
+      </div>
     </main>
 
-    <aside class="rightcol">
-      <h3 class="h3">Trending tags</h3>
-      <div id="trending"></div>
+    <aside class="rightcol" aria-label="Trending tags and about">
+      <h3 class="h3">Trending tags <span id="trendingCount" class="badge"></span></h3>
+      <div id="trending" class="kicker muted">Loading...</div>
       <div style="height:18px"></div>
       <h3 class="h3">About</h3>
-      <p class="muted">All posts are stored in Firestore and visible to everyone. Moderators and admins can manage content.</p>
+      <p class="muted">All posts are stored in Firestore. Moderators and admins can manage content. Posts accept Markdown and sanitized HTML.</p>
     </aside>
   </div>
 </div>
 
-<div class="modal-backdrop" id="modalBackdrop">
-  <div class="modal" id="postModal">
-    <h2>Create new post</h2>
+<!-- Post creation / edit modal -->
+<div class="modal-backdrop" id="modalBackdrop" aria-hidden="true">
+  <div class="modal" id="postModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <h2 id="modalTitle">Create new post</h2>
     <div style="height:8px"></div>
     <div class="form-row">
       <input id="postTitle" class="input-md" placeholder="Title (required)">
-      <select id="postCategory" class="input-md">
+      <select id="postCategory" class="input-md" aria-label="Category">
         <option value="General">General</option>
         <option value="VR Science">VR Science</option>
         <option value="History">History</option>
@@ -119,7 +155,7 @@ body{margin:0; font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 
       </select>
     </div>
     <div style="height:8px"></div>
-    <textarea id="postContent" class="textarea-md" placeholder="Write your article or note (HTML allowed)"></textarea>
+    <textarea id="postContent" class="textarea-md" placeholder="Write your article or note — Markdown allowed (HTML will be sanitized)"></textarea>
     <div style="height:8px"></div>
     <input id="postTags" class="input-md" placeholder="Tags (comma separated)">
     <div style="height:12px"></div>
@@ -130,12 +166,34 @@ body{margin:0; font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 
   </div>
 </div>
 
+<!-- Read-only post viewer -->
+<div class="modal-backdrop" id="viewerBackdrop" aria-hidden="true">
+  <div class="modal" id="viewerModal" role="dialog" aria-modal="true">
+    <div style="display:flex; justify-content:space-between; align-items:center">
+      <div>
+        <h2 id="viewerTitle"></h2>
+        <div id="viewerMeta" class="kicker muted"></div>
+      </div>
+      <div id="viewerActions"></div>
+    </div>
+    <hr style="border:none; height:1px; background:#eee; margin:12px 0">
+    <div id="viewerBody" class="post-content"></div>
+    <div style="height:12px"></div>
+    <div id="viewerTags" class="tags"></div>
+  </div>
+</div>
+
 <!-- Firebase + Google Sign-In + Firestore Logic -->
 <script type="module">
+  // ESM imports: Firebase, DOMPurify (ESM), marked (ESM)
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
   import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-  import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, doc, deleteDoc, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+  import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, doc, deleteDoc, setDoc, getDoc, where, getDocs, updateDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
+  import DOMPurify from 'https://cdn.jsdelivr.net/npm/dompurify@3.0.5/dist/purify.es.js';
+  import { marked } from 'https://cdn.jsdelivr.net/npm/marked@5.2.12/lib/marked.esm.js';
+
+  // ---------- CONFIG: Replace with your project's config if different ----------
   const firebaseConfig = {
     apiKey: "AIzaSyBWlj0gA31boKWZ8Rukj7oSUZbIqUsY6Sk",
     authDomain: "tipidi-tapap.firebaseapp.com",
@@ -145,55 +203,470 @@ body{margin:0; font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 
     appId: "1:607716485574:web:52a976161569ac79a06ac7",
     measurementId: "G-WJNZNZ4Q9Q"
   };
+  // -------------------------------------------------------------------------------
 
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const provider = new GoogleAuthProvider();
   const db = getFirestore(app);
 
-  window.googleLogin = async () => {
+  // UI elements
+  const authBtn = document.getElementById('authBtn');
+  const userNameEl = document.getElementById('userName');
+  const newPostBtn = document.getElementById('newPostBtn');
+  const modalBackdrop = document.getElementById('modalBackdrop');
+  const postModal = document.getElementById('postModal');
+  const postTitle = document.getElementById('postTitle');
+  const postContent = document.getElementById('postContent');
+  const postTags = document.getElementById('postTags');
+  const postCategory = document.getElementById('postCategory');
+  const cancelPost = document.getElementById('cancelPost');
+  const submitPost = document.getElementById('submitPost');
+
+  const postsContainer = document.getElementById('postsContainer');
+  const topicList = document.getElementById('topicList');
+  const filterRow = document.getElementById('filterRow');
+  const trendingEl = document.getElementById('trending');
+  const trendingCount = document.getElementById('trendingCount');
+  const adminPanel = document.getElementById('adminPanel');
+
+  const viewerBackdrop = document.getElementById('viewerBackdrop');
+  const viewerModal = document.getElementById('viewerModal');
+  const viewerTitle = document.getElementById('viewerTitle');
+  const viewerMeta = document.getElementById('viewerMeta');
+  const viewerBody = document.getElementById('viewerBody');
+  const viewerTags = document.getElementById('viewerTags');
+  const viewerActions = document.getElementById('viewerActions');
+
+  let currentUser = null;
+  let currentRole = 'anonymous'; // 'user' | 'moderator' | 'admin'
+  let postsSnapshotUnsub = null;
+  let allPosts = []; // local cache
+
+  // Utility: open/close modal
+  function openModal(modalWrap){
+    modalWrap.style.display = 'flex';
+    setTimeout(()=> modalWrap.querySelector('.modal').classList.add('show'), 10);
+    modalWrap.setAttribute('aria-hidden', 'false');
+  }
+  function closeModal(modalWrap){
+    modalWrap.querySelector('.modal').classList.remove('show');
+    setTimeout(()=> modalWrap.style.display = 'none', 250);
+    modalWrap.setAttribute('aria-hidden', 'true');
+  }
+
+  // Auth handlers
+  authBtn.addEventListener('click', async ()=>{
+    if(currentUser){
+      await signOut(auth);
+      return;
+    }
     try {
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
-      const roleDoc = await getDoc(doc(db, 'roles', user.uid));
-      if (!roleDoc.exists()) {
-        await setDoc(doc(db, 'roles', user.uid), { role: 'user' });
-      }
-    } catch(err){ alert('Sign-in failed: '+err.message); }
+      await signInWithPopup(auth, provider);
+    } catch(err){
+      alert('Sign-in failed: ' + err.message);
+    }
+  });
+
+  window.googleLogout = async ()=> {
+    await signOut(auth);
   };
 
-  window.googleLogout = async () => { await signOut(auth); };
+  // Create or update role doc for new users (default role = user)
+  async function ensureRoleDoc(uid){
+    const roleRef = doc(db, 'roles', uid);
+    const snap = await getDoc(roleRef);
+    if(!snap.exists()){
+      await setDoc(roleRef, { role: 'user' });
+      return 'user';
+    }
+    return snap.data()?.role || 'user';
+  }
 
-  onAuthStateChanged(auth, async user => {
-    window.currentUser = user;
-    if(user){ document.getElementById('userName').textContent = user.displayName; document.getElementById('signInBtn').style.display='none'; } else { document.getElementById('userName').textContent=''; document.getElementById('signInBtn').style.display='inline-block'; }
+  // When auth state changes
+  onAuthStateChanged(auth, async user=>{
+    currentUser = user;
+    if(user){
+      userNameEl.textContent = user.displayName;
+      authBtn.textContent = 'Sign out';
+      // ensure role
+      try {
+        currentRole = await ensureRoleDoc(user.uid);
+      } catch(e){ console.warn('role doc error', e); currentRole='user' }
+      renderAdminPanel();
+    } else {
+      userNameEl.textContent = '';
+      authBtn.textContent = 'Sign in with Google';
+      currentRole = 'anonymous';
+      renderAdminPanel();
+    }
   });
 
-  document.getElementById('newPostBtn').addEventListener('click', ()=>{ if(!window.currentUser){ alert('Sign in first'); return; } document.getElementById('modalBackdrop').style.display='flex'; setTimeout(()=> document.getElementById('postModal').classList.add('show'),10); });
-  document.getElementById('cancelPost').addEventListener('click', ()=>{ document.getElementById('postModal').classList.remove('show'); setTimeout(()=> document.getElementById('modalBackdrop').style.display='none',250); });
+  // New post modal behavior
+  newPostBtn.addEventListener('click', ()=>{
+    if(!currentUser){
+      alert('Please sign in to create a post.');
+      return;
+    }
+    // prepare modal for create
+    postTitle.value = '';
+    postContent.value = '';
+    postTags.value = '';
+    postCategory.value = 'General';
+    submitPost.dataset.mode = 'create';
+    openModal(modalBackdrop);
+  });
+  cancelPost.addEventListener('click', ()=> closeModal(modalBackdrop));
 
-  document.getElementById('submitPost').addEventListener('click', async ()=>{
-    const title=document.getElementById('postTitle').value.trim();
-    const content=document.getElementById('postContent').value.trim();
-    if(!title||!content){ alert('Title and content required'); return; }
-    const tags=document.getElementById('postTags').value.split(',').map(s=>s.trim()).filter(Boolean);
-    const category=document.getElementById('postCategory').value;
-    await addDoc(collection(db,'posts'),{title,content,tags,category,author:{uid:window.currentUser.uid,name:window.currentUser.displayName},createdAt:serverTimestamp(),visible:true});
-    document.getElementById('postTitle').value=''; document.getElementById('postContent').value=''; document.getElementById('postTags').value=''; document.getElementById('postCategory').value='General';
-    document.getElementById('postModal').classList.remove('show'); setTimeout(()=> document.getElementById('modalBackdrop').style.display='none',250);
+  // Publish or update post
+  submitPost.addEventListener('click', async ()=>{
+    const title = postTitle.value.trim();
+    const contentRaw = postContent.value.trim();
+    if(!title || !contentRaw){ alert('Title and content are required'); return; }
+    const tags = postTags.value.split(',').map(s=>s.trim()).filter(Boolean);
+    const category = postCategory.value || 'General';
+    const mode = submitPost.dataset.mode || 'create';
+    try {
+      if(mode === 'create'){
+        await addDoc(collection(db,'posts'), {
+          title,
+          content: contentRaw,
+          tags,
+          category,
+          author: { uid: currentUser.uid, name: currentUser.displayName, email: currentUser.email },
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+          visible: true
+        });
+      } else if(mode === 'edit'){
+        const id = submitPost.dataset.postId;
+        const pDoc = doc(db,'posts',id);
+        await updateDoc(pDoc, {
+          title, content: contentRaw, tags, category, updatedAt: serverTimestamp()
+        });
+      }
+      closeModal(modalBackdrop);
+    } catch(err){
+      alert('Error saving post: '+err.message);
+    }
   });
 
-  const postsQuery=query(collection(db,'posts'),orderBy('createdAt','desc'));
-  onSnapshot(postsQuery,snap=>{
-    const container=document.getElementById('postsContainer'); container.innerHTML='';
-    snap.forEach(docSnap=>{
-      const p=docSnap.data(); if(!p.visible)return;
-      const el=document.createElement('div'); el.className='post';
-      el.innerHTML=`<div class="avatar">${p.author?.name[0]||'A'}</div><div class="post-body"><h3>${p.title}</h3><p>${p.content}</p><small>By ${p.author.name}</small></div>`;
-      container.appendChild(el);
+  // Subscribe to posts collection and render feed + topics + trending
+  const postsQuery = query(collection(db,'posts'), orderBy('createdAt','desc'));
+  postsSnapshotUnsub = onSnapshot(postsQuery, snap=>{
+    const posts = [];
+    snap.forEach(snapDoc=>{
+      const data = snapDoc.data();
+      posts.push({ id: snapDoc.id, ...data });
     });
+    allPosts = posts;
+    renderFeed(posts);
+    renderTopicsAndTrending(posts);
+  }, err=>{
+    console.error('posts snapshot error', err);
   });
+
+  // Render feed with sanitized markdown, snippets, and click-to-open
+  function renderFeed(posts){
+    postsContainer.innerHTML = '';
+    const search = document.getElementById('globalSearch').value.trim().toLowerCase();
+    const activeFilter = document.querySelector('.filter-chip.filter-active')?.dataset.filter || 'all';
+
+    const filtered = posts.filter(p=>{
+      if(!p.visible) return false;
+      if(activeFilter !== 'all' && p.category !== activeFilter && !(p.tags||[]).includes(activeFilter)) return false;
+      if(!search) return true;
+      const hay = (p.title + ' ' + (p.content||'') + ' ' + (p.tags||[]).join(' ')).toLowerCase();
+      return hay.includes(search);
+    });
+
+    if(filtered.length === 0){
+      postsContainer.innerHTML = '<div class="muted">No posts match your filters/search.</div>';
+      return;
+    }
+
+    filtered.forEach(p=>{
+      const el = document.createElement('div');
+      el.className = 'post';
+      const avatarChar = (p.author?.name || 'A')[0] || 'A';
+      // Render markdown -> HTML, then sanitize
+      const html = DOMPurify.sanitize(marked.parse(p.content || ''), { USE_PROFILES: { html: true }});
+      // snippet: plain text trimmed
+      const snippetText = stripTags(html).slice(0, 220);
+      const snippetHtml = DOMPurify.sanitize(marked.parse(snippetText + (snippetText.length >= 220 ? '...' : '')), {USE_PROFILES:{html:true}});
+
+      el.innerHTML = `
+        <div class="avatar" aria-hidden="true">${escapeHtml(avatarChar)}</div>
+        <div class="post-body">
+          <h3 class="post-title">${escapeHtml(p.title)}</h3>
+          <div class="post-meta">${p.category} • ${p.author?.name || 'Anonymous'} • ${timestampToString(p.createdAt)}</div>
+          <div class="post-content"><div class="post-snippet">${snippetHtml}</div></div>
+          <div class="tags">${(p.tags||[]).map(t=>`<span class="tag">${escapeHtml(t)}</span>`).join('')}</div>
+          <div class="actions-row">
+            <button class="small" data-action="open" data-id="${p.id}">Open</button>
+            ${(currentRole==='admin' || currentRole==='moderator' || (currentUser && currentUser.uid === p.author?.uid)) ? `<button class="small" data-action="edit" data-id="${p.id}">Edit</button>` : ''}
+            ${(currentRole==='admin' || currentRole==='moderator' || (currentUser && currentUser.uid === p.author?.uid)) ? `<button class="small" data-action="delete" data-id="${p.id}">Delete</button>` : ''}
+          </div>
+        </div>
+      `;
+      postsContainer.appendChild(el);
+    });
+
+    // attach delegated click handlers for open / edit / delete
+    postsContainer.querySelectorAll('[data-action]').forEach(btn=>{
+      btn.onclick = async (e)=>{
+        const id = btn.dataset.id;
+        const action = btn.dataset.action;
+        const post = allPosts.find(x=>x.id===id);
+        if(!post) return alert('Post not found (it may have been removed).');
+        if(action === 'open') openViewer(post);
+        else if(action === 'edit'){
+          if(!currentUser) return alert('Please sign in to edit.');
+          // permission check: owner or moderator/admin
+          if(!(currentUser.uid === post.author?.uid || currentRole==='admin' || currentRole==='moderator')) return alert('You do not have permission to edit this post.');
+          // populate modal with post and set mode to edit
+          postTitle.value = post.title || '';
+          postContent.value = post.content || '';
+          postTags.value = (post.tags||[]).join(', ');
+          postCategory.value = post.category || 'General';
+          submitPost.dataset.mode = 'edit';
+          submitPost.dataset.postId = post.id;
+          openModal(modalBackdrop);
+        } else if(action === 'delete'){
+          if(!currentUser) return alert('Please sign in to delete.');
+          if(!(currentUser.uid === post.author?.uid || currentRole==='admin' || currentRole==='moderator')) return alert('You do not have permission to delete this post.');
+          if(!confirm('Delete this post permanently?')) return;
+          try {
+            await deleteDoc(doc(db,'posts',id));
+            alert('Post deleted.');
+          } catch(err){
+            alert('Delete failed: '+err.message);
+          }
+        }
+      };
+    });
+  }
+
+  // Open viewer modal for full post
+  function openViewer(post){
+    viewerTitle.textContent = post.title;
+    viewerMeta.textContent = `${post.category} • ${post.author?.name || 'Anonymous'} • ${timestampToString(post.createdAt)}${post.updatedAt ? ' • updated '+timestampToString(post.updatedAt) : ''}`;
+    viewerBody.innerHTML = DOMPurify.sanitize(marked.parse(post.content || ''), { USE_PROFILES: { html: true }});
+    viewerTags.innerHTML = (post.tags||[]).map(t=>`<span class="tag">${escapeHtml(t)}</span>`).join('');
+    viewerActions.innerHTML = '';
+    // Show inline admin actions in viewer for convenience
+    if(currentUser && (currentUser.uid === post.author?.uid || currentRole==='admin' || currentRole==='moderator')){
+      const editBtn = document.createElement('button'); editBtn.className='small'; editBtn.textContent='Edit';
+      editBtn.onclick = ()=> {
+        // open edit modal with post
+        postTitle.value = post.title || '';
+        postContent.value = post.content || '';
+        postTags.value = (post.tags||[]).join(', ');
+        postCategory.value = post.category || 'General';
+        submitPost.dataset.mode = 'edit';
+        submitPost.dataset.postId = post.id;
+        closeModal(viewerBackdrop);
+        openModal(modalBackdrop);
+      };
+      const delBtn = document.createElement('button'); delBtn.className='small'; delBtn.textContent='Delete';
+      delBtn.onclick = async ()=>{
+        if(!confirm('Delete this post?')) return;
+        try { await deleteDoc(doc(db,'posts',post.id)); closeModal(viewerBackdrop); alert('Deleted.'); } catch(err){ alert('Delete failed: '+err.message); }
+      };
+      viewerActions.appendChild(editBtn); viewerActions.appendChild(delBtn);
+    }
+    openModal(viewerBackdrop);
+  }
+  // close viewer when clicking backdrop
+  viewerBackdrop.addEventListener('click', (e)=>{ if(e.target === viewerBackdrop) closeModal(viewerBackdrop); });
+
+  // Helpers: escape HTML for small bits, strip tags
+  function escapeHtml(s=''){ return (s+'').replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]); }
+  function stripTags(html=''){ return html.replace(/<[^>]*>/g,'').replace(/\s+/g,' ').trim(); }
+  function timestampToString(ts){
+    try {
+      if(!ts) return 'unknown date';
+      const d = ts.toDate ? ts.toDate() : (ts instanceof Date ? ts : new Date(ts));
+      return d.toLocaleString(undefined, { dateStyle:'medium', timeStyle:'short' });
+    } catch(e){ return 'unknown date'; }
+  }
+
+  // Topics & Trending
+  function renderTopicsAndTrending(posts){
+    // categories counts
+    const catCounts = {};
+    const tagCounts = {};
+    posts.forEach(p=>{
+      if(!p.visible) return;
+      const cat = p.category || 'General';
+      catCounts[cat] = (catCounts[cat]||0) + 1;
+      (p.tags||[]).forEach(t => { tagCounts[t] = (tagCounts[t]||0)+1; });
+    });
+    // topics
+    topicList.innerHTML = Object.keys(catCounts).sort().map(cat=>`<a href="#" data-cat="${escapeHtml(cat)}">${escapeHtml(cat)} <span class="badge">${catCounts[cat]}</span></a>`).join('') || '<div class="muted">No categories yet</div>';
+    topicList.querySelectorAll('a').forEach(a=>{
+      a.onclick = (e)=>{ e.preventDefault(); applyFilter(a.dataset.cat); };
+    });
+
+    // filters: tags top 8
+    const popularTags = Object.entries(tagCounts).sort((a,b)=>b[1]-a[1]).slice(0,12);
+    // ensure filter-row has 'All' button
+    filterRow.innerHTML = '<button class="filter-chip filter-active" data-filter="all">All</button>' + popularTags.map(t=>`<button class="filter-chip" data-filter="${escapeHtml(t[0])}">${escapeHtml(t[0])} <span class="badge">${t[1]}</span></button>`).join('');
+    filterRow.querySelectorAll('.filter-chip').forEach(btn=>{
+      btn.onclick = ()=>{
+        filterRow.querySelectorAll('.filter-chip').forEach(b=>b.classList.remove('filter-active'));
+        btn.classList.add('filter-active');
+        applyFilter(btn.dataset.filter);
+      };
+    });
+
+    // trending tags in right column
+    trendingEl.innerHTML = popularTags.length ? popularTags.map(t=>`<button class="filter-chip" data-filter="${escapeHtml(t[0])}">${escapeHtml(t[0])} <span class="badge">${t[1]}</span></button>`).join(' ') : '<div class="muted">No tags yet</div>';
+    trendingCount.textContent = Object.keys(tagCounts).length;
+    // wire up trending tag clicks
+    trendingEl.querySelectorAll('.filter-chip').forEach(b=>b.onclick = ()=>{ filterRow.querySelectorAll('.filter-chip').forEach(bb=>bb.classList.remove('filter-active')); b.classList.add('filter-active'); applyFilter(b.dataset.filter); });
+  }
+
+  // Apply filter and re-render
+  function applyFilter(filter){
+    // set active class handled in UI wiring
+    renderFeed(allPosts);
+    // smooth scroll to feed
+    document.querySelector('.feed').scrollIntoView({behavior:'smooth'});
+  }
+
+  // Admin panel: manage roles and view administrative actions
+  function renderAdminPanel(){
+    if(!currentUser){
+      adminPanel.innerHTML = '<div class="muted">Sign in to see admin options</div>';
+      return;
+    }
+    if(currentRole === 'admin' || currentRole === 'moderator'){
+      adminPanel.innerHTML = `
+        <div class="kicker muted">Signed in as ${escapeHtml(currentUser.displayName)} (${escapeHtml(currentRole)})</div>
+        <div style="height:8px"></div>
+        <button id="manageRolesBtn" class="linkish">Manage roles</button>
+        <button id="signOutSmall" class="linkish">Sign out</button>
+      `;
+      document.getElementById('manageRolesBtn').onclick = openManageRoles;
+      document.getElementById('signOutSmall').onclick = ()=> signOut(auth);
+    } else {
+      adminPanel.innerHTML = `<div class="kicker muted">Signed in as ${escapeHtml(currentUser.displayName)} (${escapeHtml(currentRole)})</div><div style="height:8px"></div><button id="signOutSmall2" class="linkish">Sign out</button>`;
+      document.getElementById('signOutSmall2').onclick = ()=> signOut(auth);
+    }
+  }
+
+  // Simple manage roles UI (admin only)
+  async function openManageRoles(){
+    if(currentRole !== 'admin') return alert('Only admins can manage roles.');
+    // build a small UI modal (reuses post modal)
+    const modalHtml = `
+      <div style="padding:6px;">
+        <div class="kicker muted">Roles manager — enter user UID and role (user | moderator | admin)</div>
+        <div style="height:8px"></div>
+        <input id="roleUid" class="input-md" placeholder="User UID">
+        <div style="height:8px"></div>
+        <input id="roleValue" class="input-md" placeholder="Role (user | moderator | admin)">
+        <div style="height:8px"></div>
+        <div style="display:flex; gap:8px; justify-content:flex-end">
+          <button id="cancelRoles" class="linkish">Cancel</button>
+          <button id="saveRoles" class="btn">Save</button>
+        </div>
+      </div>
+    `;
+    // create ephemeral modal
+    const wrapper = document.createElement('div'); wrapper.className='modal-backdrop'; wrapper.style.display='flex';
+    wrapper.innerHTML = `<div class="modal">${modalHtml}</div>`;
+    document.body.appendChild(wrapper);
+    setTimeout(()=> wrapper.querySelector('.modal').classList.add('show'),10);
+    wrapper.querySelector('#cancelRoles').onclick = ()=> { wrapper.querySelector('.modal').classList.remove('show'); setTimeout(()=> wrapper.remove(),250); };
+    wrapper.querySelector('#saveRoles').onclick = async ()=>{
+      const uid = wrapper.querySelector('#roleUid').value.trim();
+      const role = wrapper.querySelector('#roleValue').value.trim();
+      if(!uid || !role) return alert('UID and role required');
+      if(!['user','moderator','admin'].includes(role)) return alert('Invalid role');
+      try {
+        await setDoc(doc(db,'roles',uid), { role });
+        alert('Role saved');
+        wrapper.querySelector('.modal').classList.remove('show'); setTimeout(()=> wrapper.remove(),250);
+      } catch(err){ alert('Error: '+err.message) }
+    };
+  }
+
+  // Search box wiring
+  document.getElementById('globalSearch').addEventListener('input', ()=>{
+    renderFeed(allPosts);
+  });
+
+  // close modal on backdrop click
+  modalBackdrop.addEventListener('click', (e)=>{ if(e.target===modalBackdrop) closeModal(modalBackdrop); });
+
+  // Utility: escape string for insertion into small text contexts (already defined)
+  // For good measure attach keyboard shortcuts: Esc closes modals
+  window.addEventListener('keydown', (e)=> {
+    if(e.key === 'Escape'){
+      if(modalBackdrop.style.display==='flex') closeModal(modalBackdrop);
+      if(viewerBackdrop.style.display==='flex') closeModal(viewerBackdrop);
+    }
+  });
+
+  // small helper to construct doc reference (imported functions used above)
+  function doc(db, path, id){
+    // we already imported doc from firebase modules earlier, but our local helper is shadowing — use global import
+    return window.firebaseDoc ? window.firebaseDoc(db, path, id) : window._docFallback(db, path, id);
+  }
+
+  // Because we used imports named 'doc' earlier, they are available — ensure no conflict (no-op)
+  // eslint-disable-next-line no-unused-vars
+  const _noop = null;
+
+  // Because we sometimes receive timestamps as null, provide a defensive presentation
+  // Done earlier in timestampToString
+
+  // Render initial admin panel (anonymous)
+  renderAdminPanel();
+
 </script>
+
+<!-- Firestore security rules (copy to Firebase Console -> Firestore -> Rules) -->
+<!--
+Firestore rules example (adjust to your needs). Deploy these using the Firebase Console or CLI.
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Roles collection: readable by admins and moderators, writable only by admins
+    match /roles/{userId} {
+      allow read: if request.auth != null && (get(/databases/$(database)/documents/roles/$(request.auth.uid)).data.role in ['admin','moderator']);
+      allow write: if request.auth != null && get(/databases/$(database)/documents/roles/$(request.auth.uid)).data.role == 'admin';
+      // allow users to create their own role doc only when it doesn't exist (for onboarding default)
+      allow create: if request.auth != null && request.auth.uid == userId && !exists(/databases/$(database)/documents/roles/$(userId));
+    }
+
+    // Posts
+    match /posts/{postId} {
+      allow read: if true; // public read — adjust if you want restricted visibility
+      allow create: if request.auth != null && request.resource.data.author.uid == request.auth.uid
+                    && request.resource.data.title is string
+                    && request.resource.data.content is string
+                    && request.resource.data.visible is bool;
+      allow update: if request.auth != null && (
+          // owners can update their posts
+          resource.data.author.uid == request.auth.uid
+          // moderators and admins can update any post
+          || get(/databases/$(database)/documents/roles/$(request.auth.uid)).data.role in ['admin','moderator']
+      );
+      allow delete: if request.auth != null && (
+          resource.data.author.uid == request.auth.uid
+          || get(/databases/$(database)/documents/roles/$(request.auth.uid)).data.role in ['admin','moderator']
+      );
+    }
+
+    // Deny everything else by default
+    match /{document=**} { allow read, write: if false; }
+  }
+}
+-->
 
 </body>
 </html>
